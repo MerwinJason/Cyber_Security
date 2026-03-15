@@ -520,47 +520,8 @@ window.checkAudit=function(sid){
     if(correct>=g.configs.length*0.8)setP(sid,100);
 };
 
-// ============================================
-//  AI CHAT (Gemini API)
-// ============================================
-const GEMINI_KEY='AIzaSyAMcyR5HuCsBgTMCpNZu5wYlwil-8YGIGc';
-const GEMINI_URL=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
-const chatToggle=document.getElementById('chatToggle');
-const chatWindow=document.getElementById('chatWindow');
-const chatClose=document.getElementById('chatClose');
-const chatInput=document.getElementById('chatInput');
-const chatSend=document.getElementById('chatSend');
-const chatMessages=document.getElementById('chatMessages');
 
-chatToggle.addEventListener('click',()=>chatWindow.classList.toggle('hidden'));
-chatClose.addEventListener('click',()=>chatWindow.classList.add('hidden'));
-chatInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
-chatSend.addEventListener('click',sendChat);
 
-async function sendChat(){
-    const msg=chatInput.value.trim();if(!msg)return;
-    chatInput.value='';
-    chatMessages.innerHTML+=`<div class="chat-msg user"><div class="chat-bubble">${escHtml(msg)}</div></div>`;
-    const typingId='typing-'+Date.now();
-    chatMessages.innerHTML+=`<div class="chat-msg bot" id="${typingId}"><div class="chat-bubble typing">Thinking</div></div>`;
-    chatMessages.scrollTop=chatMessages.scrollHeight;
-
-    try{
-        const res=await fetch(GEMINI_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({contents:[{parts:[{text:`You are a cyber security in manufacturing expert tutor. Give short, clear answers (2-4 sentences max). Focus on: CIA triad, IT vs OT, SCADA, PLCs, industrial protocols (Modbus, DNP3, Profibus), network security, OWASP, Zero Trust, cloud security, Purdue model. Answer this question: ${msg}`}]}],generationConfig:{maxOutputTokens:300,temperature:0.7}})
-        });
-        const data=await res.json();
-        const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||'Sorry, I couldn\'t generate a response. Please try again.';
-        document.getElementById(typingId).querySelector('.chat-bubble').classList.remove('typing');
-        document.getElementById(typingId).querySelector('.chat-bubble').textContent=reply;
-    }catch(err){
-        document.getElementById(typingId).querySelector('.chat-bubble').classList.remove('typing');
-        document.getElementById(typingId).querySelector('.chat-bubble').textContent='⚠️ Connection error. Check your internet and try again.';
-    }
-    chatMessages.scrollTop=chatMessages.scrollHeight;
-}
-
-function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // ============================================
 //  INIT
